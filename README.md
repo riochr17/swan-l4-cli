@@ -5,17 +5,29 @@ An interpreter and CLI runner for the **Swan L4 DSL**, a domain-specific languag
 ## Table of Contents
 
 - [Overview](#overview)
+- [Examples](#examples)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Language Features](#language-features)
-- [Examples](#examples)
 
 ## Overview
 
 Swan L4 is a structured text-based language that lets you program step-by-step logic, manage execution state, invoke LLM queries, branch conditionally, and coordinate nested agent behaviors. 
 
 `@ssww.one/l4cli` compiles and executes these `.l4` scripts directly from your terminal.
+
+## Examples
+
+````l4
+TITLE Greeting Program
+
+SAY Welcome to the test environment!
+LISTEN
+THINK Extract the user's name from this text.
+SAY Nice to meet you, {Context}!
+````
+
 
 ## Installation
 
@@ -87,14 +99,3 @@ The execution, syntax, features, and tokenization/parsing specifications for the
 - **Localized Error Diagnostics**: Supports multi-language translation (English and Indonesian) for syntax and semantic parser errors.
 
 Please check out the [swan-L4 repository](https://github.com/riochr17/swan-L4) for more information on the core language specifications, grammar details, parser features, and implementation files.
-
-## Examples
-
-````l4
-TITLE Greeting Program
-
-SAY Welcome to the test environment!
-LISTEN
-THINK Extract the user's name from this text.
-SAY Nice to meet you, {Context}!
-````
