@@ -30,6 +30,8 @@ THINK Extract the user's name from this text.
 SAY Nice to meet you, {Context}!
 ````
 
+See more examples on [example-l4](example-l4/) folder
+
 
 ## Installation
 
