@@ -19,11 +19,17 @@ Swan L4 is a structured text-based language that lets you program step-by-step l
 
 ## Installation
 
+### Globally via npm
+
 You can install the CLI globally from npm:
 
 ```bash
 npm install -g @ssww.one/l4cli
 ```
+
+### Pre-compiled Standalone Binaries
+
+Alternatively, you can download pre-compiled standalone executables for Linux, macOS, and Windows directly from the [v0.0.1-alpha Release Page](https://github.com/riochr17/swan-L4-cli/releases/tag/0.0.1-alpha).
 
 ### Local Development Setup
 
