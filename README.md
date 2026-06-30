@@ -39,6 +39,15 @@ npm run build
 
 This registers the `l4cli` binary command globally on your system.
 
+### Compiling Standalone Binaries (Bun)
+
+To compile self-contained executables for all major OSes/architectures (Linux, macOS, and Windows) using Bun:
+
+```bash
+# Compile binaries into the ./bin directory
+npm run build:bin
+```
+
 ## Configuration
 
 The interpreter requires access to an OpenAI-compatible API to resolve LLM calls (`THINK`, `SAY THINK`, `IF`, etc.). Define the following environment variables in a `.env` file in your execution directory or export them in your shell:
