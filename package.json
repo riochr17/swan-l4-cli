@@ -1,0 +1,33 @@
+{
+  "name": "@ssww.one/l4cli",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc && npm unlink -g && npm link"
+  },
+  "bin": {
+    "l4cli": "./dist/exec.js"
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@ssww.one/framework": "^0.6.1",
+    "@ssww.one/l4": "^0.0.6",
+    "axios": "^1.18.1",
+    "dotenv": "^16.6.1",
+    "enquirer": "^2.4.1"
+  }
+}

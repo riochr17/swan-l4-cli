@@ -1,0 +1,6 @@
+TITLE Sample Agent
+#DEFINE AGENT_WEATHER weather.l4
+
+SAY Welcome to Warung Lele!
+ASK AGENT_WEATHER tanyakan berapa suhu udara saat ini?
+SAY THINK Berapa suhu saat ini?
