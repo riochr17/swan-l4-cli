@@ -17,6 +17,8 @@ Swan L4 is a structured text-based language that lets you program step-by-step l
 
 `@ssww.one/l4cli` compiles and executes these `.l4` scripts directly from your terminal.
 
+Read full language specification on [Swan L4 Language Specifications](https://github.com/riochr17/swan-L4/blob/master/SPECIFICATIONS.md)
+
 ## Examples
 
 ````l4
