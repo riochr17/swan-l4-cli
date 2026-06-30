@@ -10,6 +10,7 @@ An interpreter and CLI runner for the **Swan L4 DSL**, a domain-specific languag
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Language Features](#language-features)
+- [Editor Extensions](#editor-extensions)
 
 ## Overview
 
@@ -103,3 +104,10 @@ The execution, syntax, features, and tokenization/parsing specifications for the
 - **Localized Error Diagnostics**: Supports multi-language translation (English and Indonesian) for syntax and semantic parser errors.
 
 Please check out the [swan-L4 repository](https://github.com/riochr17/swan-L4) for more information on the core language specifications, grammar details, parser features, and implementation files.
+
+## Editor Extensions
+
+For syntax highlighting and language support when writing `.l4` scripts, you can search for **"SWAN L4 Language Support"** in your editor's extension search panel, or install it directly:
+
+- **VS Code**: [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=NaivDeveloper.swan-l4-vscode)
+- **VSCodium**: [Open VSX Registry](https://open-vsx.org/extension/NaivDeveloper/swan-l4-vscode)
