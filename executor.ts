@@ -94,8 +94,8 @@ export async function executeNodes(param: ExecuteNodesParam): Promise<string> {
   for (let i = 0; i < param.nodes.length; i++) {
     const node = param.nodes[i];
     context = await executeNode({
-      node: node!, 
-      old_context: context, 
+      node: node!,
+      old_context: context,
       llm: param.llm,
       customListener: param.customListener,
       level: param.level,
@@ -135,7 +135,7 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
         throw new Error(`Path is empty`);
       }
       const abs_w1_path = path.resolve(param.relative_dir, param.node.path);
-      await fs.promises.writeFile(abs_w1_path, replaceContext(param.node.content || '', param.old_context));
+      await fs.promises.writeFile(abs_w1_path, param.node.content ? replaceContext(param.node.content || '', param.old_context) : param.old_context);
       output = `Write file ${param.node.path} success`;
       break;
     case "Say":
@@ -144,7 +144,6 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
       break;
     case "SayThink":
       const prompt1 = [
-        'Context',
         param.old_context,
         '',
         'User Request',
@@ -162,20 +161,17 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
       } else {
         const answers: { prompt: string } = await prompt([{
           type: "input",
-          name: ' input',
-          message: '',
-          prefix: '',
+          name: 'prompt',
+          message: ' input'
         }]);
         output = answers.prompt;
       }
       break;
     case "Think":
       const prompt2 = [
-        'Context',
         param.old_context,
         '',
-        'User Request',
-        replaceContext(param.node.argument || '', param.old_context)
+        `User Request: ${replaceContext(param.node.argument || '', param.old_context)}`,
       ].join('\n');
       if (param.node.debug) printDebug(`Prompt: ${prompt2}`, param.level);
       clean_loading = printLoading('Asking LLM...', param.level);
@@ -186,15 +182,17 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
       try {
         const call_url = macro_urls[param.node.macroName] || '';
         if (param.node.debug) printDebug(`HTTP URL: ${call_url}`, param.level);
-        const params = new URLSearchParams(replaceContext(param.node.argument || '', param.old_context));
+        const params = replaceContext(param.node.argument || '', param.old_context);
         if (param.node.debug) printDebug(`HTTP Params: ${params}`, param.level);
-        clean_loading = printLoading('Fetching http request...', param.level);
-        const response1 = await axios.get<string>(call_url, { params });
-        clean_loading();
+        const full_url = `${call_url}${encodeURI(params)}`;
+        clean_loading = printLoading(`Fetching http request to ${full_url}...`, param.level);
+        const response1 = await axios.get<string>(full_url);
         output = JSON.stringify(response1.data);
         if (param.node.debug) printDebug(`HTTP Response: ${output}`, param.level);
       } catch (err) {
         output = err instanceof AxiosError ? JSON.stringify(err.response?.data) : (err as Error).message || '';
+      } finally {
+        clean_loading?.();
       }
       break;
     case "Ask":
@@ -211,10 +209,10 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
         throw new Error(`Path ${abs_a1_path} doesnt exist`);
       }
       const agent_code = await fs.promises.readFile(abs_a1_path, 'utf-8');
-      const agent_instruction = param.node.argument;
+      const agent_instruction = replaceContext(param.node.argument || '', param.old_context);
       const sub_agent_level = (param.level || 0) + 1;
       output = await runProgram({
-        source: agent_code, 
+        source: agent_code,
         llm: param.llm.clone(),
         async customListener(agent_context: string) {
           const prompt_context = [
@@ -354,10 +352,10 @@ function printLoading(label: string, level: number = 0): () => void {
     // Move cursor to the start of the line and clear it
     process.stdout.clearLine(0);
     process.stdout.cursorTo(0);
-    
+
     // Print the current frame and text
     process.stdout.write(`${pipe_wrapper}${spinnerFrames[frameIndex]} ${label}`);
-    
+
     // Cycle through the spinner frames
     frameIndex = (frameIndex + 1) % spinnerFrames.length;
   }, 80);

@@ -1,0 +1,16 @@
+TITLE Smart Recipe Generator
+SAY What ingredients do you have in your fridge?
+$ingredients LISTEN
+LOOP:
+  SAY What cuisine style would you like? (e.g. Italian, Mexican, Asian)
+  $cuisine LISTEN
+  $recipe THINK Suggest a recipe using {$ingredients} in {$cuisine} style. Include ingredients and steps.
+  SAY Suggested Recipe:
+  SAY {$recipe}
+  SAY Are you happy with this recipe? (yes/no)
+  LISTEN
+  IF user answer is yes:
+    SAY Enjoy your cooking!
+    EXIT LOOP
+  ELSE:
+    SAY Let's try another cuisine style.

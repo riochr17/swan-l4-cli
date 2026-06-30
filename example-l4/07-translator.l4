@@ -1,0 +1,8 @@
+TITLE Language Translator
+SAY Enter English text to translate to Indonesian:
+LISTEN
+THINK Translate the text to Indonesian
+SAY ```
+Translated text:
+{Context}
+```

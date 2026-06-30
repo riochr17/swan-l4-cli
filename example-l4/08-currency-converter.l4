@@ -1,0 +1,9 @@
+TITLE Currency Converter
+#DEFINE CALL_CONVERTER https://api.exchangerate-api.com/v4/latest/USD
+
+SAY Fetching current exchange rates...
+$rates CALL_CONVERTER
+SAY Enter amount in USD:
+LISTEN
+THINK Using exchange rates: {$rates}. Calculate the value USD above in EUR.
+SAY The converted amount is: EUR {Context}

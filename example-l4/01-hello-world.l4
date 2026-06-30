@@ -1,0 +1,5 @@
+TITLE Hello World
+SAY Welcome to the Swan L4 DSL!
+SAY What is your name?
+LISTEN
+SAY Nice to meet you, {Context}!

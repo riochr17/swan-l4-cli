@@ -1,0 +1,12 @@
+TITLE Support Ticket Router
+SAY Welcome to Support. Please describe your issue:
+LISTEN
+$dept THINK Classify this issue into Billing, Tech Support, or Sales
+SAY Routing ticket to {$dept}...
+IF department {$dept} is Billing:
+  SAY Billing agents are online from 9 AM to 5 PM.
+ELSE:
+  IF department {$dept} is Tech Support:
+    SAY Tech agents will respond within 2 hours.
+  ELSE:
+    SAY Connecting you to Sales right now!

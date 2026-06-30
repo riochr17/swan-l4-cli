@@ -1,0 +1,8 @@
+TITLE Interactive Prompt
+SAY Tell me a topic you want to write a short poem about:
+LISTEN
+THINK Write a short 2-line funny poem about it.
+SAY ```
+Here is your poem:
+{Context}
+```

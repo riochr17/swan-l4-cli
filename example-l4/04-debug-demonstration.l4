@@ -1,0 +1,6 @@
+TITLE Debug Mode Demonstration
+SAY This statement has debug logging enabled!
+SAY Please enter some test input:
+LISTEN
+THINK Analyze user input!
+SAY Analysis complete!

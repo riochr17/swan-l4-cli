@@ -1,0 +1,5 @@
+TITLE Simple File Logger
+SAY Enter a log message to save:
+LISTEN
+WRITE ./log.txt {Context}
+SAY Log message written to file successfully!

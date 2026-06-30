@@ -1,0 +1,10 @@
+TITLE Newsletter Generator
+SAY Enter the main topic for this week's newsletter:
+LISTEN
+$content THINK Write a professional newsletter draft about topic above. Include a title and 2 short paragraphs.
+SAY Generating newsletter draft using LLM...
+WRITE ./newsletter.txt {$content}
+SAY ```
+Newsletter saved to newsletter.txt! Here is a preview:
+{$content}
+```

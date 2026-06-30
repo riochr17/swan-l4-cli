@@ -1,0 +1,11 @@
+TITLE Stock Advisor
+#DEFINE CALL_STOCK https://query1.finance.yahoo.com/v8/finance/chart
+
+SAY Enter stock ticker (e.g. AAPL, TSLA):
+$ticker LISTEN
+$stock_data CALL_STOCK /{$ticker}?range=1d&interval=1m
+$advice THINK Analyze this stock chart data: {$stock_data}. Suggest whether to BUY, HOLD, or SELL {$ticker} today and explain why.
+SAY ```
+Investment Recommendation:
+{$advice}
+```

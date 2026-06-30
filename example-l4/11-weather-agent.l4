@@ -1,0 +1,12 @@
+TITLE Advanced Weather Agent
+#DEFINE CALL_WEATHER https://wttr.in
+
+SAY Which city's weather would you like to check?
+$city LISTEN
+$weather_data CALL_WEATHER /{$city}?format=3
+SAY Current Weather Info:
+SAY {$weather_data}
+IF the weather in {$city} is rainy or snowy:
+  SAY Remember to bring an umbrella today!
+ELSE:
+  SAY Have a wonderful day outdoors!

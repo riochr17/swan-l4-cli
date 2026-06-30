@@ -1,0 +1,11 @@
+TITLE Math Tutor Parent
+#DEFINE AGENT_TUTOR ./tutor.l4
+
+SAY Enter a math problem you need help solving:
+$problem LISTEN
+SAY Spawning Math Tutor Agent to solve the problem...
+$explanation ASK AGENT_TUTOR {$problem}
+SAY ```
+Final Explanation from Tutor:
+{Context}
+```

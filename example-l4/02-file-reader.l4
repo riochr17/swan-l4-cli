@@ -1,0 +1,5 @@
+TITLE Simple File Reader
+SAY Reading the configuration file...
+$config READ ./config.json
+SAY Loaded configuration data:
+SAY {$config}

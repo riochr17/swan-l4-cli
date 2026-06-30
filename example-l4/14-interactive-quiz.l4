@@ -1,0 +1,21 @@
+TITLE Interactive Quiz
+SAY Welcome to the Trivia Quiz!
+$score THINK Initialize score to 0.
+
+SAY Question 1: What is the capital of France?
+LISTEN
+IF answer is Paris:
+  SAY Correct!
+  $score THINK Increment score by 1 from {$score}.
+ELSE:
+  SAY Incorrect. The capital is Paris.
+
+SAY Question 2: How many continents are there?
+LISTEN
+IF answer is 7:
+  SAY Correct!
+  $score THINK Increment score by 1 from {$score}.
+ELSE:
+  SAY Incorrect. The answer is 7.
+
+SAY Your final quiz score is: {$score}

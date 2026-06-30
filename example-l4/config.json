@@ -1,0 +1,6 @@
+{
+  "appName": "Swan L4 Test Runner",
+  "version": "1.0.0",
+  "environment": "development",
+  "debug": true
+}

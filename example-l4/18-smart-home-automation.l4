@@ -1,0 +1,9 @@
+TITLE Smart Home Automation
+$status READ ./devices.json
+SAY Current Smart Home Status: {$status}
+SAY What action would you like to perform? (e.g., turn off AC, turn on lights)
+LISTEN
+$updated_status THINK Based on current status: {$status}, apply the action: {Context}. Return the updated status as a valid JSON string.
+WRITE ./devices.json {$updated_status}
+SAY Smart devices updated successfully! New status:
+SAY {$updated_status}

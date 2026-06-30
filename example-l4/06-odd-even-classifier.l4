@@ -1,0 +1,7 @@
+TITLE Odd or Even Classifier
+SAY Please enter a number:
+$number LISTEN
+IF the number is even:
+  SAY The number is even!
+ELSE:
+  SAY The number is odd!

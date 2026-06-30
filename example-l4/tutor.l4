@@ -1,0 +1,3 @@
+TITLE Math Tutor Subagent
+LISTEN
+SAY THINK Explain the solution step-by-step for the math problem in the context

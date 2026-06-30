@@ -1,0 +1,27 @@
+TITLE Autonomous Research Agent
+SAY Enter research topic:
+$topic LISTEN
+$notes THINK Write a comprehensive bullet-point summary of the core facts and key aspects of {$topic}.
+WRITE ./research_notes.txt {$notes}
+LOOP:
+  $current_draft READ ./research_notes.txt
+  SAY Generating article draft...
+  $draft THINK Based on these notes: {$current_draft}, write a 3-paragraph article draft about {$topic}.
+  SAY Current Draft:
+  SAY {$draft}
+  SAY Does this draft require any edits? (Enter your feedback, or type 'approve' to finalize)
+  $feedback LISTEN
+  IF feedback {$feedback} is approve:
+    SAY Final article saved to draft.txt!
+    WRITE ./draft.txt {$draft}
+    EXIT LOOP
+  ELSE:
+    SAY Revising draft with your feedback...
+    $notes THINK ```
+    Revise these notes:
+    {$current_draft}
+
+    incorporate the user feedback:
+    {$feedback}
+    ```
+    WRITE ./research_notes.txt {$notes}
