@@ -71,7 +71,16 @@ l4cli path/to/script.l4
 
 ## Language Features
 
-The syntax, features, and tokenization/parsing specifications for the Swan L4 DSL are located in the separate repository: [swan-L4](https://github.com/riochr17/swan-L4).
+The execution, syntax, features, and tokenization/parsing specifications for the Swan L4 DSL are backed by the core parser and tokenizer located in the separate repository: [swan-L4](https://github.com/riochr17/swan-L4).
+
+### Core DSL Features
+- **Indentation-based Scoping**: Automatically detects majority-based indentation (spaces or tabs) to determine scope and block execution.
+- **Strict Sequencing**: Enforces structured script ordering (`TITLE` → `#DEFINE` → Executable Statements).
+- **Macro & Agent Calls**: Supports `#DEFINE` directives for external API endpoints starting with `CALL_` and agent routing starting with `AGENT_`.
+- **Implicit Context Pipeline**: Seamlessly tracks state through the global `Context` variable and processes `{Context}` template interpolation inside string arguments.
+- **Localized Error Diagnostics**: Supports multi-language translation (English and Indonesian) for syntax and semantic parser errors.
+
+Please check out the [swan-L4 repository](https://github.com/riochr17/swan-L4) for more information on the core language specifications, grammar details, parser features, and implementation files.
 
 ## Examples
 
