@@ -1,0 +1,8 @@
+TITLE Paralel correlation between stock market and weather
+#DEFINE AGENT_STOCK_MARKET ./17-stock-market-agent.l4
+#DEFINE AGENT_WEATHER ./11-weather-agent.l4
+
+PARALEL:
+  ASK AGENT_STOCK_MARKET find latest price of PLTR
+  ASK AGENT_WEATHER find out should I bring umberalla in berlin or not
+SAY THINK summarize two data you got into a sentence

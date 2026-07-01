@@ -1,7 +1,7 @@
 TITLE Advanced Weather Agent
 #DEFINE CALL_WEATHER https://wttr.in
 
-SAY Which city's weather would you like to check?
+SAY Which city's weather would you like to check? single name, example: jakarta
 $city LISTEN
 $weather_data CALL_WEATHER /{$city}?format=3
 SAY Current Weather Info:

@@ -19,6 +19,7 @@ export interface RunProgramParam {
   relative_dir: string
   initial_context?: string
   semantic_model?: string
+  silent?: boolean
 }
 
 export function runProgram(param: RunProgramParam): Promise<string> {
@@ -41,7 +42,8 @@ export function runProgram(param: RunProgramParam): Promise<string> {
             customListener: param.customListener,
             level: param.level,
             relative_dir: param.relative_dir,
-            initial_context: param.initial_context
+            initial_context: param.initial_context,
+            silent: param.silent
           }));
         } catch (err) {
           reject(err);
@@ -59,10 +61,11 @@ export interface ExecuteParam {
   relative_dir: string
   initial_context?: string
   semantic_model?: string
+  silent?: boolean
 }
 
 export async function execute(param: ExecuteParam) {
-  printOpeningBox(param.program.title?.value ?? '<untitled>', param.level);
+  if (!param.silent) printOpeningBox(param.program.title?.value ?? '<untitled>', param.level);
   for (const macro of param.program.defines) {
     macro_urls[macro.name] = macro.url;
   }
@@ -74,7 +77,8 @@ export async function execute(param: ExecuteParam) {
       customListener: param.customListener,
       level: param.level,
       relative_dir: param.relative_dir,
-      semantic_model: param.semantic_model
+      semantic_model: param.semantic_model,
+      silent: param.silent
     });
   } catch (err) {
     if (err instanceof ExitProgram) {
@@ -82,7 +86,7 @@ export async function execute(param: ExecuteParam) {
     }
     throw err;
   } finally {
-    printClosingBox(param.program.title?.value ?? '<untitled>', param.level);
+    if (!param.silent) printClosingBox(param.program.title?.value ?? '<untitled>', param.level);
   }
 }
 
@@ -94,6 +98,7 @@ export interface ExecuteNodesParam {
   level?: number
   relative_dir: string
   semantic_model?: string
+  silent?: boolean
 }
 
 export async function executeNodes(param: ExecuteNodesParam): Promise<string> {
@@ -107,7 +112,8 @@ export async function executeNodes(param: ExecuteNodesParam): Promise<string> {
       customListener: param.customListener,
       level: param.level,
       relative_dir: param.relative_dir,
-      semantic_model: param.semantic_model
+      semantic_model: param.semantic_model,
+      silent: param.silent
     });
   }
   return context;
@@ -121,12 +127,13 @@ export interface ExecuteNodeParam {
   level?: number,
   relative_dir: string
   semantic_model?: string
+  silent?: boolean
 }
 
 export async function executeNode(param: ExecuteNodeParam): Promise<string> {
   param.llm.cleanUp();
   let output = '';
-  let clean_loading;
+  let clean_loading: any;
   switch (param.node.type) {
     case "Read":
       if (!param.node.path) {
@@ -149,7 +156,7 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
       break;
     case "Say":
       output = replaceContext(param.node.argument || '', param.old_context);
-      printLog(output, param.level);
+      if (!param.silent) printLog(output, param.level);
       break;
     case "SayThink":
       const prompt1 = [
@@ -159,10 +166,10 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
         replaceContext(param.node.argument || '', param.old_context)
       ].join('\n');
       if (param.node.debug) printDebug(`Prompt: ${prompt1}`, param.level);
-      clean_loading = printLoading('Asking LLM...', param.level);
+      if (!param.silent) clean_loading = printLoading('Asking LLM...', param.level);
       output = (await param.llm.askLLM(prompt1, z.object({ answer: z.string() }))).answer;
-      clean_loading();
-      printLog(output, param.level);
+      if (!param.silent) clean_loading.clean();
+      if (!param.silent) printLog(output, param.level);
       break;
     case "Listen":
       if (param.customListener) {
@@ -183,9 +190,9 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
         `User Request: ${replaceContext(param.node.argument || '', param.old_context)}`,
       ].join('\n');
       if (param.node.debug) printDebug(`Prompt: ${prompt2}`, param.level);
-      clean_loading = printLoading('Asking LLM...', param.level);
+      if (!param.silent) clean_loading = printLoading('Asking LLM...', param.level);
       output = (await param.llm.askLLM(prompt2, z.object({ answer: z.string() }))).answer;
-      clean_loading();
+      if (!param.silent) clean_loading?.clean();
       break;
     case "Call":
       try {
@@ -194,14 +201,14 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
         const params = replaceContext(param.node.argument || '', param.old_context);
         if (param.node.debug) printDebug(`HTTP Params: ${params}`, param.level);
         const full_url = `${call_url}${encodeURI(params)}`;
-        clean_loading = printLoading(`Fetching http request to ${full_url}...`, param.level);
+        if (!param.silent) clean_loading = printLoading(`Fetching http request to ${full_url}...`, param.level);
         const response1 = await axios.get<string>(full_url);
         output = JSON.stringify(response1.data);
         if (param.node.debug) printDebug(`HTTP Response: ${output}`, param.level);
       } catch (err) {
         output = err instanceof AxiosError ? JSON.stringify(err.response?.data) : (err as Error).message || '';
       } finally {
-        clean_loading?.();
+        if (!param.silent) clean_loading?.clean();
       }
       break;
     case "Ask":
@@ -233,14 +240,15 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
             `Answer ${agent_name} request/statement or ask the agent to achieve your objective!`
           ].join('\n');
           if (param.node.debug) printDebug(`Agent Prompt: ${prompt_context}`, sub_agent_level);
-          clean_loading = printLoading('Asking LLM...', sub_agent_level);
+          if (!param.silent) clean_loading = printLoading('Asking LLM...', sub_agent_level);
           const prompt_output = (await param.llm.askLLM(prompt_context, z.object({ answer: z.string() }))).answer;
-          clean_loading();
-          printLog(`>> ${prompt_output}`, sub_agent_level);
+          if (!param.silent) clean_loading?.clean();
+          if (!param.silent) printLog(`>> ${prompt_output}`, sub_agent_level);
           return prompt_output;
         },
         level: sub_agent_level,
-        relative_dir: param.relative_dir
+        relative_dir: param.relative_dir,
+        silent: param.silent
       });
       break;
     case "If":
@@ -252,9 +260,9 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
         replaceContext(param.node.condition || '', param.old_context)
       ].join('\n');
       if (param.node.debug) printDebug(`Prompt: ${prompt3}`, param.level);
-      clean_loading = printLoading('Asking LLM...', param.level);
+      if (!param.silent) clean_loading = printLoading('Asking LLM...', param.level);
       const is_satisfied = (await param.llm.askLLM(prompt3, z.object({ answer: z.boolean() }))).answer;
-      clean_loading();
+      if (!param.silent) clean_loading.clean();
       if (param.node.debug) printDebug(`Conditional state: ${is_satisfied}`, param.level);
       if (is_satisfied) {
         output = await executeNodes({
@@ -263,7 +271,8 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
           llm: param.llm,
           customListener: param.customListener,
           level: param.level,
-          relative_dir: param.relative_dir
+          relative_dir: param.relative_dir,
+          silent: param.silent
         });
       } else {
         output = await executeNodes({
@@ -272,7 +281,8 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
           llm: param.llm,
           customListener: param.customListener,
           level: param.level,
-          relative_dir: param.relative_dir
+          relative_dir: param.relative_dir,
+          silent: param.silent
         });
       }
       break;
@@ -288,7 +298,8 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
             llm: param.llm,
             customListener: param.customListener,
             level: param.level,
-            relative_dir: param.relative_dir
+            relative_dir: param.relative_dir,
+            silent: param.silent
           });
         } catch (err) {
           if (err instanceof ExitLoop) {
@@ -331,22 +342,49 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
       const vectors: number[][] = [];
       const semantic_model = param.semantic_model || 'text-embedding-3-small';
       let k = 1;
-      for (const chunk of chunks) {
-        clean_loading = printLoading(`Vectorizing chunk ${k}/${chunks.length}...`, param.level);
-        vectors.push(await param.llm.vectorize(chunk, semantic_model));
-        clean_loading();
-        k++;
+      try {
+        for (const chunk of chunks) {
+          if (!param.silent) clean_loading = printLoading(`Vectorizing chunk ${k}/${chunks.length}...`, param.level);
+          vectors.push(await param.llm.vectorize(chunk, semantic_model));
+          if (!param.silent) clean_loading.softClean();
+          k++;
+        }
+        if (!param.silent) clean_loading = printLoading(`Vectorizing query...`, param.level);
+        const query_vector = await param.llm.vectorize(param.node.query || '', semantic_model);
+        if (!param.silent) clean_loading.softClean();
+        if (!param.silent) clean_loading = printLoading(`Calculate most relevant vectors...`, param.level);
+        const top_most_indices = topNMostRelevantIndices(vectors, query_vector, result_chunks);
+        if (!param.silent) clean_loading.clean();
+        if (param.node.debug) printDebug(`Top Most Indices: ${top_most_indices.join(', ')}`);
+        const result = top_most_indices.map(i => `# Doc ${i + 1}\n${chunks[i]}`).join('\n\n---\n');
+        if (param.node.debug) printDebug(`Result:\n${result}`);
+        output = result;
+      } catch (err) {} finally {
+        clean_loading?.clean();
       }
-      clean_loading = printLoading(`Vectorizing query...`, param.level);
-      const query_vector = await param.llm.vectorize(param.node.query || '', semantic_model);
-      clean_loading();
-      clean_loading = printLoading(`Calculate most relevant vectors...`, param.level);
-      const top_most_indices = topNMostRelevantIndices(vectors, query_vector, result_chunks);
-      clean_loading();
-      if (param.node.debug) printDebug(`Top Most Indices: ${top_most_indices.join(', ')}`);
-      const result = top_most_indices.map(i => chunks[i]).join('\n---\n');
-      if (param.node.debug) printDebug(`Result:\n${result}`);
-      output = result;
+      break;
+    case "Paralel":
+      if (!param.silent) clean_loading = printLoading(`Run ${param.node.body.length} paralel execution...`, param.level);
+      const paralel_result: string[] = await Promise.all(param.node.body.map(async (child_node: StatementNode) => {
+        try {
+          return await executeNode({
+            node: child_node,
+            old_context: param.old_context,
+            llm: param.llm,
+            customListener: param.customListener,
+            level: param.level,
+            relative_dir: param.relative_dir,
+            semantic_model: param.semantic_model,
+            silent: true
+          });
+        } catch (err) {
+          return err instanceof AxiosError ? JSON.stringify(err.response?.data) : (err as Error).message || '';
+        }
+      }));
+      if (!param.silent) clean_loading?.clean();
+      const concatenated_parelel_output = paralel_result.map((res, index: number) => `# Execution ${index + 1} Result\n${res}`).join('\n\n---\n');
+      if (param.node.debug) printDebug(`Concatenated data:\n${concatenated_parelel_output}`);
+      output = concatenated_parelel_output;
       break;
     case "ExitLoop":
       throw new ExitLoop();
@@ -399,7 +437,7 @@ function printLog(text: string, level: number = 0) {
   console.log(getNormalizedText(text, level));
 }
 
-function printLoading(label: string, level: number = 0): () => void {
+function printLoading(label: string, level: number = 0): { clean: () => void, softClean: () => void } {
   const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
   let frameIndex = 0;
   const pipe_wrapper = ' ' + Array(level + 1).fill('│ ').join('');
@@ -417,18 +455,53 @@ function printLoading(label: string, level: number = 0): () => void {
   }, 80);
 
   // Stop the loader after 4 seconds
-  return () => {
-    clearInterval(loaderInterval);
-    process.stdout.clearLine(0);
-    process.stdout.cursorTo(0);
+  return {
+    clean() {
+      clearInterval(loaderInterval);
+      process.stdout.clearLine(0);
+      process.stdout.cursorTo(0);
+    },
+    softClean() {
+      clearInterval(loaderInterval);
+    }
   };
 }
 
-function wrapText(text: string, level: number = 0) {
-  const limit = (process.stdout.columns || 80) - (2 * level + 3)
-  // Regex matches chunks of text up to the character limit, breaking at word boundaries
-  const regex = new RegExp(`(.{1,${limit}})(?:\\s+|$)`, 'g');
-  return text.match(regex)?.map(line => line.trim()).join('\n') || text;
+function wrapText(text: string, level: number = 0): string {
+  // Safely get columns, defaulting to 80
+  const columns = (typeof process !== 'undefined' && process.stdout?.columns) ? process.stdout.columns : 80;
+  const limit = columns - (2 * level + 3);
+
+  if (limit <= 0) return text;
+
+  return text
+    .split('\n')
+    .map(line => {
+      // If the line already fits, return it untouched to preserve all formatting
+      if (line.length <= limit) return line;
+
+      // Split by spaces to preserve all exact spacing and naturally isolate long words
+      const words = line.split(' ');
+      let wrapped = '';
+      let currentLine = words[0];
+
+      for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        
+        // If adding the next word (plus the connecting space) fits within the limit, append it
+        if (currentLine!.length + 1 + word!.length <= limit) {
+          currentLine += ' ' + word;
+        } else {
+          // Otherwise, push the current line and start a new one
+          wrapped += currentLine + '\n';
+          currentLine = word;
+        }
+      }
+      
+      wrapped += currentLine;
+      return wrapped;
+    })
+    .join('\n');
 }
 
 

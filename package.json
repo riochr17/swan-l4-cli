@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@ssww.one/framework": "^0.6.1",
-    "@ssww.one/l4": "^0.0.8",
+    "@ssww.one/l4": "^0.0.9",
     "axios": "^1.18.1",
     "dotenv": "^16.6.1",
     "enquirer": "^2.4.1"
