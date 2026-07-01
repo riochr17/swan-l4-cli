@@ -240,7 +240,7 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
     case "If":
       const prompt3 = [
         'Context',
-        param.old_context,
+        param.old_context || '<empty context>',
         '',
         'Say answer = true if this statement true based on context above:',
         replaceContext(param.node.condition || '', param.old_context)

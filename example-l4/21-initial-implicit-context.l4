@@ -1,0 +1,5 @@
+TITLE Example Initial Implicit Context
+IF context is empty:
+  SAY No context provided.
+ELSE:
+  SAY Initial Context is: {Context}

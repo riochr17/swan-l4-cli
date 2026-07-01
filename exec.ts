@@ -27,4 +27,4 @@ const llm = new OpenAILLM({
   apiKey: process.env.OPENAI_APIKEY || '',
   model: process.env.OPENAI_MODEL || '',
 });
-runProgram({ source, llm, relative_dir, initial_context }).then(s => console.log(`Output: ${s}`)).catch(console.error);
+runProgram({ source, llm, relative_dir, initial_context }).then(s => { }).catch(console.error);
