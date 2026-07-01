@@ -10,6 +10,7 @@ import { OpenAILLM } from "@ssww.one/framework";
 import { readFileSync } from "node:fs";
 
 const file_input_path = process.argv[2];
+const initial_context = process.argv[3];
 if (!file_input_path) {
   console.error("Please provide .l4 file input");
   process.exit(0);
@@ -26,4 +27,4 @@ const llm = new OpenAILLM({
   apiKey: process.env.OPENAI_APIKEY || '',
   model: process.env.OPENAI_MODEL || '',
 });
-runProgram({ source, llm, relative_dir }).then(s => console.log(`Output: ${s}`)).catch(console.error);
+runProgram({ source, llm, relative_dir, initial_context }).then(s => console.log(`Output: ${s}`)).catch(console.error);

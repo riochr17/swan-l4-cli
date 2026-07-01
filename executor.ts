@@ -17,6 +17,7 @@ export interface RunProgramParam {
   customListener?: (context: string) => Promise<string>
   level?: number
   relative_dir: string
+  initial_context?: string
 }
 
 export function runProgram(param: RunProgramParam): Promise<string> {
@@ -38,7 +39,8 @@ export function runProgram(param: RunProgramParam): Promise<string> {
             llm: param.llm,
             customListener: param.customListener,
             level: param.level,
-            relative_dir: param.relative_dir
+            relative_dir: param.relative_dir,
+            initial_context: param.initial_context
           }));
         } catch (err) {
           reject(err);
@@ -54,6 +56,7 @@ export interface ExecuteParam {
   customListener?: (context: string) => Promise<string>
   level?: number
   relative_dir: string
+  initial_context?: string
 }
 
 export async function execute(param: ExecuteParam) {
@@ -64,7 +67,7 @@ export async function execute(param: ExecuteParam) {
   try {
     return await executeNodes({
       nodes: param.program.body,
-      old_context: '',
+      old_context: param.initial_context || '',
       llm: param.llm,
       customListener: param.customListener,
       level: param.level,
