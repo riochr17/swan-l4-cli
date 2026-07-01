@@ -1,4 +1,4 @@
-import { GenericLLM } from "@ssww.one/framework";
+import { OpenAILLM } from "@ssww.one/framework";
 import { parse, ProgramNode, StatementNode, tokenize } from "@ssww.one/l4";
 import { prompt } from "enquirer";
 import z from 'zod';
@@ -13,11 +13,12 @@ let macro_urls: Record<string, string> = {};
 
 export interface RunProgramParam {
   source: string
-  llm: GenericLLM
+  llm: OpenAILLM
   customListener?: (context: string) => Promise<string>
   level?: number
   relative_dir: string
   initial_context?: string
+  semantic_model?: string
 }
 
 export function runProgram(param: RunProgramParam): Promise<string> {
@@ -52,11 +53,12 @@ export function runProgram(param: RunProgramParam): Promise<string> {
 
 export interface ExecuteParam {
   program: ProgramNode
-  llm: GenericLLM
+  llm: OpenAILLM
   customListener?: (context: string) => Promise<string>
   level?: number
   relative_dir: string
   initial_context?: string
+  semantic_model?: string
 }
 
 export async function execute(param: ExecuteParam) {
@@ -71,7 +73,8 @@ export async function execute(param: ExecuteParam) {
       llm: param.llm,
       customListener: param.customListener,
       level: param.level,
-      relative_dir: param.relative_dir
+      relative_dir: param.relative_dir,
+      semantic_model: param.semantic_model
     });
   } catch (err) {
     if (err instanceof ExitProgram) {
@@ -86,10 +89,11 @@ export async function execute(param: ExecuteParam) {
 export interface ExecuteNodesParam {
   nodes: StatementNode[]
   old_context: string
-  llm: GenericLLM
+  llm: OpenAILLM
   customListener?: (context: string) => Promise<string>
   level?: number
   relative_dir: string
+  semantic_model?: string
 }
 
 export async function executeNodes(param: ExecuteNodesParam): Promise<string> {
@@ -102,7 +106,8 @@ export async function executeNodes(param: ExecuteNodesParam): Promise<string> {
       llm: param.llm,
       customListener: param.customListener,
       level: param.level,
-      relative_dir: param.relative_dir
+      relative_dir: param.relative_dir,
+      semantic_model: param.semantic_model
     });
   }
   return context;
@@ -111,10 +116,11 @@ export async function executeNodes(param: ExecuteNodesParam): Promise<string> {
 export interface ExecuteNodeParam {
   node: StatementNode
   old_context: string
-  llm: GenericLLM
+  llm: OpenAILLM
   customListener?: (context: string) => Promise<string>
   level?: number,
   relative_dir: string
+  semantic_model?: string
 }
 
 export async function executeNode(param: ExecuteNodeParam): Promise<string> {
@@ -295,6 +301,53 @@ export async function executeNode(param: ExecuteNodeParam): Promise<string> {
         }
       }
       break;
+    case "Find":
+      // FIND <result>/<total> <query> <source>
+      const result_chunks = +param.node.resultChunks;
+      const total_chunks = +param.node.totalChunks;
+      if (param.node.debug) printDebug([
+        `Target Chunk: ${result_chunks}`,
+        `Total Chunk: ${total_chunks}`,
+        `Query: ${param.node.query}`,
+        `Source Context Type: ${param.node.sourceContext?.type}`,
+      ].join('\n'));
+      if (result_chunks >= total_chunks) {
+        throw new Error(`Invalid semantic search: result chunks number should be less than ${total_chunks}.`);
+      }
+      let source = '';
+      switch (param.node.sourceContext?.type) {
+        case 'raw':
+          source = param.node.sourceContext.value;
+          break;
+        case 'explicit':
+          source = global_context[param.node.sourceContext.value] || '';
+          break;
+        case 'implicit':
+          source = param.old_context;
+          break;
+      }
+      
+      const chunks: string[] = splitIntoNGroups(source, total_chunks);
+      const vectors: number[][] = [];
+      const semantic_model = param.semantic_model || 'text-embedding-3-small';
+      let k = 1;
+      for (const chunk of chunks) {
+        clean_loading = printLoading(`Vectorizing chunk ${k}/${chunks.length}...`, param.level);
+        vectors.push(await param.llm.vectorize(chunk, semantic_model));
+        clean_loading();
+        k++;
+      }
+      clean_loading = printLoading(`Vectorizing query...`, param.level);
+      const query_vector = await param.llm.vectorize(param.node.query || '', semantic_model);
+      clean_loading();
+      clean_loading = printLoading(`Calculate most relevant vectors...`, param.level);
+      const top_most_indices = topNMostRelevantIndices(vectors, query_vector, result_chunks);
+      clean_loading();
+      if (param.node.debug) printDebug(`Top Most Indices: ${top_most_indices.join(', ')}`);
+      const result = top_most_indices.map(i => chunks[i]).join('\n---\n');
+      if (param.node.debug) printDebug(`Result:\n${result}`);
+      output = result;
+      break;
     case "ExitLoop":
       throw new ExitLoop();
     case "ContinueLoop":
@@ -376,4 +429,48 @@ function wrapText(text: string, level: number = 0) {
   // Regex matches chunks of text up to the character limit, breaking at word boundaries
   const regex = new RegExp(`(.{1,${limit}})(?:\\s+|$)`, 'g');
   return text.match(regex)?.map(line => line.trim()).join('\n') || text;
+}
+
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i]! * b[i]!;
+    normA += a[i]! * a[i]!;
+    normB += b[i]! * b[i]!;
+  }
+
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+function topNMostRelevantIndices(vectors: number[][], query: number[], m: number): number[] {
+  return vectors
+    .map((vector, index) => ({
+      index,
+      score: cosineSimilarity(vector, query),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, m)
+    .map(({ index }) => index);
+}
+
+function splitIntoNGroups(str: string, N: number): string[] {
+    const result: string[] = [];
+    const baseLength = Math.floor(str.length / N);
+
+    let offset = 0;
+    for (let i = 0; i < N; i++) {
+        // If it's the last group, take everything that's left
+        if (i === N - 1) {
+            result.push(str.slice(offset));
+        } else {
+            result.push(str.slice(offset, offset + baseLength));
+            offset += baseLength;
+        }
+    }
+
+    return result;
 }

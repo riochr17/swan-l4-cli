@@ -1,0 +1,8 @@
+TITLE Semantic Search with FIND
+READ ../README.md
+FIND 2/10 does this product has extension on vscode? how to install it?
+SAY ```
+Here is two docs I got so far:
+
+{Context}
+```

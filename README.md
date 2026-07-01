@@ -82,6 +82,9 @@ OPENAI_MODEL=your-model-name
 
 # Optional: Locale configuration ('id' or 'en'). Defaults to 'id'.
 LOCALE=en
+
+# Optional: only if you use FIND keyword
+OPENAI_VECTOR_MODEL=your-vector-model-name
 ```
 
 ## Usage
